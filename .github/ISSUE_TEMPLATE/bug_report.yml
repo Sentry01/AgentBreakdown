@@ -1,0 +1,67 @@
+name: "🐞 Bug report"
+description: Report a problem with the AgentBreakdown extension.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to file a bug! Please fill in the details below.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear and concise description of the bug.
+      placeholder: The window did not open when subagents started…
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: How can we reproduce it?
+      placeholder: |
+        1. Install the extension into ~/.copilot/extensions/AgentBreakdown
+        2. Run a /fleet task with 3 subagents
+        3. …
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: false
+  - type: input
+    id: copilot-version
+    attributes:
+      label: Copilot CLI version
+      description: Output of `copilot --version` (or `/version` in a session).
+      placeholder: "1.0.65"
+    validations:
+      required: true
+  - type: input
+    id: node-version
+    attributes:
+      label: Node.js version
+      description: Output of `node --version`.
+      placeholder: "v22.x"
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - macOS
+        - Linux
+        - Windows
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Extension logs (optional)
+      description: Relevant lines from `~/.copilot/logs/extensions/user-subagent-token-usage-*.log`.
+      render: shell
+    validations:
+      required: false
