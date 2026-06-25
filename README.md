@@ -120,3 +120,19 @@ Official guides and references:
   [copilot-webview-creator](https://github.com/SteveSandersonMS/copilot-webview-creator)
   by **Steve Sanderson** (MIT). See [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md).
 - This project is licensed under the [MIT License](./LICENSE).
+
+---
+
+## Contributing, issues & feature requests
+
+Found a bug or have an idea? Issues and feature requests are welcome:
+
+- **🐞 Report a bug:** [new bug report](https://github.com/Sentry01/AgentBreakdown/issues/new?template=bug_report.yml)
+- **💡 Request a feature:** [new feature request](https://github.com/Sentry01/AgentBreakdown/issues/new?template=feature_request.yml)
+- **❓ Ask a question / discuss:** [Discussions](https://github.com/Sentry01/AgentBreakdown/discussions)
+- **📋 Browse open issues:** <https://github.com/Sentry01/AgentBreakdown/issues>
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for development setup and the pull-request workflow.
+
+> **Branch protection:** `main` is protected — changes are merged via pull request (linear history,
+> no force-pushes, conversations must be resolved). Fork or branch, then open a PR.

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question / discussion
+    url: https://github.com/Sentry01/AgentBreakdown/discussions
+    about: Ask a question or discuss ideas before filing an issue.
+  - name: GitHub Copilot CLI docs
+    url: https://docs.github.com/en/copilot/how-tos/copilot-cli
+    about: Official documentation for Copilot CLI and extensions.
