@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Subagent Token Usage</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Subagent token usage</h1>
+    <span class="gen" id="gen">connecting…</span>
+  </header>
+  <section class="cards" id="cards"></section>
+  <section class="ctx" id="ctx" style="display:none">
+    <div class="label"><span>Main session context</span><span id="ctxText"></span></div>
+    <div class="bar"><span id="ctxBar" style="width:0%"></span></div>
+  </section>
+  <div id="body"></div>
+  <div class="foot"><span class="live">●</span> live — polling every second</div>
+</div>
+
+<script>
+const fmtTok = (t) => {
+  const v = Number(t) || 0;
+  if (v >= 1e6) return (v / 1e6).toFixed(1) + "M";
+  if (v >= 1e3) return (v / 1e3).toFixed(1) + "k";
+  return String(v);
+};
+const fmtDur = (ms) => {
+  if (!Number.isFinite(ms) || ms < 0) return "-";
+  const s = Math.round(ms / 1000);
+  if (s < 60) return s + "s";
+  const m = Math.floor(s / 60);
+  return m + "m " + String(s % 60).padStart(2, "0") + "s";
+};
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const shortModel = (m) => {
+  if (!m) return "-";
+  if (m.startsWith("claude-")) { const p = m.replace("claude-", "").split("-"); const f = p.shift() || ""; return (f.charAt(0).toUpperCase() + f.slice(1) + " " + p.join(" ")).trim(); }
+  if (m.startsWith("gpt-")) { const r = m.replace("gpt-", ""); const [v, ...t] = r.split("-"); return "GPT-" + v + (t.length ? " " + t.join(" ") : ""); }
+  if (m.startsWith("gemini-")) return m.replace("gemini-", "Gemini ").replace(/-/g, " ");
+  return m;
+};
+
+function card(label, value) {
+  return `<div class="card"><div class="label">${esc(label)}</div><div class="value">${esc(value)}</div></div>`;
+}
+
+const isAnthropic = (m) => String(m || "").startsWith("claude-");
+
+// Cache breakdown cell: Anthropic shows read + write; others show a single cache (cached input) value.
+function cacheCell(a) {
+  const read = a.cacheReadTokens || 0;
+  const write = a.cacheWriteTokens || 0;
+  if (isAnthropic(a.model)) {
+    return `<span class="cache"><span class="cr" title="cache read">${esc(fmtTok(read))}r</span> <span class="cw" title="cache write">${esc(fmtTok(write))}w</span></span>`;
+  }
+  return `<span class="cache">${esc(fmtTok(read || write))}</span>`;
+}
+
+function render(data) {
+  const agents = data.agents || [];
+  const t = data.totals || {};
+  const totalTok = t.totalTokens || (t.inputTokens || 0) + (t.outputTokens || 0);
+
+  document.getElementById("gen").textContent = data.generatedAt ? new Date(data.generatedAt).toLocaleTimeString() : "";
+
+  document.getElementById("cards").innerHTML =
+    card("Agents", agents.length) +
+    card("Total tokens", fmtTok(totalTok)) +
+    card("Input", fmtTok(t.inputTokens)) +
+    card("Output", fmtTok(t.outputTokens)) +
+    card("Cache R / W", fmtTok(t.cacheReadTokens) + " / " + fmtTok(t.cacheWriteTokens)) +
+    card("Tool calls", t.totalToolCalls || 0);
+
+  const ctx = document.getElementById("ctx");
+  if (data.latestContextTokens != null) {
+    const max = data.latestContextMaxTokens || 0;
+    const pct = max ? Math.min(100, Math.round((data.latestContextTokens / max) * 100)) : 0;
+    document.getElementById("ctxText").textContent = fmtTok(data.latestContextTokens) + (max ? " / " + fmtTok(max) + " (" + pct + "%)" : "");
+    document.getElementById("ctxBar").style.width = pct + "%";
+    ctx.style.display = "";
+  } else {
+    ctx.style.display = "none";
+  }
+
+  const body = document.getElementById("body");
+  if (agents.length === 0) {
+    body.innerHTML = `<div class="empty">No subagents observed yet.<br>Run <code>/fleet</code> or any multi-subagent task and they will appear here live.</div>`;
+    return;
+  }
+
+  const maxTok = Math.max(1, ...agents.map((a) => a.totalTokens || (a.inputTokens || 0) + (a.outputTokens || 0)));
+  const rows = agents.map((a) => {
+    const total = a.totalTokens || (a.inputTokens || 0) + (a.outputTokens || 0);
+    const dur = a.durationMs != null ? a.durationMs : (a.status === "running" && a.startedAt ? Date.now() - Date.parse(a.startedAt) : null);
+    const pct = Math.round((total / maxTok) * 100);
+    return `<tr>
+      <td><span class="dot ${esc(a.status)}"></span>${esc(a.status)}</td>
+      <td><div class="agent"><span>${esc(a.ordinal)}. ${esc(a.agentDisplayName)}</span><span class="sub">${esc(a.agentName)}</span></div></td>
+      <td class="model">${esc(shortModel(a.model))}</td>
+      <td><span class="tokbar"><span style="width:${pct}%"></span></span></td>
+      <td class="num strong">${esc(fmtTok(total))}</td>
+      <td class="num">${esc(fmtTok(a.inputTokens))}</td>
+      <td class="num">${esc(fmtTok(a.outputTokens))}</td>
+      <td class="num">${cacheCell(a)}</td>
+      <td class="num">${esc(a.totalToolCalls || 0)}</td>
+      <td class="num">${esc(fmtDur(dur))}</td>
+    </tr>`;
+  }).join("");
+
+  body.innerHTML = `<table>
+    <thead><tr>
+      <th>Status</th><th>Subagent</th><th>Model</th><th>Token share</th>
+      <th class="num">Total</th><th class="num">Input</th><th class="num">Output</th><th class="num">Cache</th><th class="num">Tools</th><th class="num">Time</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+async function poll() {
+  try {
+    const res = await fetch("usage.json?t=" + Date.now(), { cache: "no-store" });
+    if (res.ok) {
+      const text = await res.text();
+      render(JSON.parse(text));
+    }
+  } catch (e) { /* ignore transient */ }
+}
+poll();
+setInterval(poll, 1000);
+</script>
+</body>
+</html>

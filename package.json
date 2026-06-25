@@ -1,0 +1,17 @@
+{
+  "name": "agentbreakdown",
+  "version": "1.0.0",
+  "description": "GitHub Copilot CLI extension: live per-subagent token usage and cost breakdown in a native window beside the CLI.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Sentry01",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Sentry01/AgentBreakdown.git"
+  },
+  "keywords": ["github-copilot", "copilot-cli", "copilot-extension", "subagents", "tokens", "cost", "webview"],
+  "dependencies": {
+    "@webviewjs/webview": "^0.1.4",
+    "ws": "^8.18.0"
+  }
+}
