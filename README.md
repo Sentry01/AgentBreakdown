@@ -7,6 +7,10 @@ It also prints a single clean **summary panel in the CLI timeline** when the run
 ![status: experimental](https://img.shields.io/badge/status-experimental-orange)
 ![license: MIT](https://img.shields.io/badge/license-MIT-blue)
 
+![AgentBreakdown live window beside the Copilot CLI showing four subagents on different models](doc/example.png)
+
+> The live window (bottom) sits beside the Copilot CLI (top) and updates every second — here four subagents run on **Haiku 4.5**, **GPT-5 mini**, **Gemini 3.5 flash**, and **GPT-5.4 mini**, with the Anthropic agent showing its cache **read/write** split.
+
 ---
 
 ## What it does
